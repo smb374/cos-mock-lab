@@ -1,0 +1,10 @@
+# Test receiver for docs/plan.md stage 6. The sink listens in the VM on port 9000.
+route:
+  receiver: lab-webhook
+  group_wait: 10s
+  group_interval: 1m
+receivers:
+  - name: lab-webhook
+    webhook_configs:
+      - url: http://10.69.190.128:9000/
+        send_resolved: true
