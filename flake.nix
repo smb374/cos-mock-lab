@@ -25,6 +25,8 @@
               pre-commit
               gh
               jq
+              opentofu
+              tflint
             ];
           };
         };

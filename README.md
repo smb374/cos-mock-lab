@@ -19,3 +19,5 @@ These tools are for working on this repo. They do not include the lab environmen
 | [pre-commit](https://pre-commit.com/) | Commit hooks (`pre-commit install`) |
 | [gh](https://cli.github.com/) | GitHub CLI |
 | [jq](https://jqlang.github.io/jq/) | JSON in shell commands |
+| [OpenTofu](https://opentofu.org/) | Format Terraform files locally (the VM runs Terraform) |
+| [tflint](https://github.com/terraform-linters/tflint) | Lint Terraform files |

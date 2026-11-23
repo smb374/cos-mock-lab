@@ -40,10 +40,13 @@ vm-exec cmd:
 lint:
     ruff check
     ruff format --check
+    tofu fmt -check -recursive terraform
+    tflint --chdir terraform
 
 fmt:
     ruff format
     ruff check --fix
+    tofu fmt -recursive terraform
 
 check:
     pre-commit run --all-files
