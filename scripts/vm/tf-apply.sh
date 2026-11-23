@@ -4,4 +4,4 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 
 terraform -chdir=terraform init
-terraform -chdir=terraform apply -var="model=${1:-cos-lite}"
+terraform -chdir=terraform apply -auto-approve -var="model=${1:-cos-lite}"
