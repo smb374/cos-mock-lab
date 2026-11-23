@@ -33,6 +33,10 @@ vm-down:
 vm-run script *args:
     multipass exec {{vm}} -- {{vm_repo}}/scripts/vm/{{script}}.sh {{args}}
 
+# Run one shell command in the VM, e.g. just vm-exec 'juju controllers'.
+vm-exec cmd:
+    multipass exec {{vm}} -- bash -c {{quote(cmd)}}
+
 lint:
     ruff check
     ruff format --check
