@@ -1,0 +1,12 @@
+[Unit]
+Description=Lab exporter with fake Swift, Launchpad and GitHub signals
+
+[Service]
+User=ubuntu
+ExecStart=/home/ubuntu/.local/bin/uv run /home/ubuntu/cos-mock-lab/exporter/exporter.py
+# The repo mount can appear after boot, so retry until it exists.
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
