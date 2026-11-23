@@ -1,5 +1,14 @@
 # cos-mock-lab
 
+## Plan
+
+Follow `docs/plan.md`. Rules for the executor:
+
+- Run each command and read its output before the next step.
+- Do not claim a step is done before its check passes.
+- Use only a strict MicroK8s channel. `juju bootstrap` fails on the classic channel.
+- Log each failed step and its fix in `lab-log.md`.
+
 ## Agent skills
 
 ### Issue tracker
