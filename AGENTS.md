@@ -1,5 +1,11 @@
 # cos-mock-lab
 
+## Commands
+
+- Format: just fmt
+- Lint: just lint
+- Check: just check
+
 ## Plan
 
 Follow `docs/plan.md`. Rules for the executor:
