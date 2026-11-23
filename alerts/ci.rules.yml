@@ -1,0 +1,50 @@
+groups:
+  - name: concourse
+    rules:
+      - alert: ConcourseJobFailing
+        # Concourse has no "failed in a row" metric. This approximates it: 3 or more failures and no success in 1 h.
+        expr: |
+          sum by (job, pipeline, team) (increase(concourse_builds_finished{status="failed"}[1h])) >= 3
+          unless
+          sum by (job, pipeline, team) (increase(concourse_builds_finished{status="succeeded"}[1h])) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "Job {{ $labels.job }} in {{ $labels.pipeline }} failed at least 3 times with no success in 1 h"
+
+      - alert: NoSuccessfulBuild
+        expr: sum by (job, pipeline, team) (increase(concourse_builds_finished{status="succeeded"}[2h])) == 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "Job {{ $labels.job }} in {{ $labels.pipeline }} had no successful build in 2 h"
+
+      - alert: WorkerMissing
+        expr: |
+          sum(concourse_workers_registered{state="running"}) == 0
+          or
+          absent(concourse_workers_registered{state="running"})
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "No running Concourse worker for 5 min"
+
+  - name: exporter
+    rules:
+      - alert: ArtifactStale
+        expr: lab_swift_artifact_age_seconds > 26 * 3600
+        labels:
+          severity: warning
+        annotations:
+          summary: "Artifact {{ $labels.artifact }} is older than 26 h"
+
+  - name: scrape
+    rules:
+      - alert: ScrapeTargetDown
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Scrape target {{ $labels.instance }} has been down for 5 min"
