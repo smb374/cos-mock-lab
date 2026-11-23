@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Runs inside the cos-mock VM, through the repo mount. See docs/setup.md.
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+
+# uv installs to ~/.local/bin, which a non-login shell may not have on PATH.
+export PATH="$HOME/.local/bin:$PATH"
+uv run exporter/exporter.py

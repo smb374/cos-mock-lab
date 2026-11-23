@@ -20,7 +20,6 @@
           devShells.default = pkgs.mkShell {
             packages = with pkgs; [
               just
-              uv
               ruff
               shellcheck
               pre-commit

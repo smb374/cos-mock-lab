@@ -14,7 +14,6 @@ These tools are for working on this repo. They do not include the lab environmen
 | Tool | Use |
 | --- | --- |
 | [just](https://github.com/casey/just) | Run the recipes in `justfile` |
-| [uv](https://docs.astral.sh/uv/) | Run the Python exporter |
 | [ruff](https://docs.astral.sh/ruff/) | Format and lint Python |
 | [shellcheck](https://www.shellcheck.net/) | Lint shell scripts |
 | [pre-commit](https://pre-commit.com/) | Commit hooks (`pre-commit install`) |
