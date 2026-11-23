@@ -1,0 +1,43 @@
+# Concourse quickstart from https://concourse-ci.org/docker-compose.yml,
+# plus the Prometheus metrics settings from docs/plan.md stage 4.
+services:
+  concourse-db:
+    image: postgres
+    environment:
+      POSTGRES_DB: concourse
+      POSTGRES_PASSWORD: concourse_pass
+      POSTGRES_USER: concourse_user
+      PGDATA: /database
+      POSTGRES_HOST_AUTH_METHOD: trust #for healthcheck
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U concourse_user -d concourse"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+  concourse:
+    image: concourse/concourse
+    command: quickstart
+    privileged: true
+    cgroup: host
+    depends_on:
+      concourse-db:
+        condition: service_healthy
+    ports: ["8080:8080", "9391:9391"]
+    environment:
+      CONCOURSE_POSTGRES_HOST: concourse-db
+      CONCOURSE_POSTGRES_USER: concourse_user
+      CONCOURSE_POSTGRES_PASSWORD: concourse_pass
+      CONCOURSE_POSTGRES_DATABASE: concourse
+      CONCOURSE_EXTERNAL_URL: http://10.69.190.128:8080
+      CONCOURSE_ADD_LOCAL_USER: test:test
+      CONCOURSE_MAIN_TEAM_LOCAL_USER: test
+      CONCOURSE_PROMETHEUS_BIND_IP: 0.0.0.0
+      CONCOURSE_PROMETHEUS_BIND_PORT: "9391"
+      # instead of relying on the default "detect"
+      CONCOURSE_WORKER_BAGGAGECLAIM_DRIVER: overlay
+      CONCOURSE_CLIENT_SECRET: ${CONCOURSE_CLIENT_SECRET:?copy concourse/.env.example to concourse/.env}
+      CONCOURSE_TSA_CLIENT_SECRET: ${CONCOURSE_TSA_CLIENT_SECRET:?copy concourse/.env.example to concourse/.env}
+      CONCOURSE_CLUSTER_NAME: tutorial
+      CONCOURSE_WORKER_CONTAINERD_DNS_SERVER: "8.8.8.8"
+      CONCOURSE_ENABLE_RESOURCE_CAUSALITY: "true"

@@ -24,4 +24,4 @@ just vm-shell
 
 Use a strict MicroK8s channel only. `juju bootstrap` fails on the classic channel. Follow the plan for the add-ons, the bootstrap, and the check of each step.
 
-Scripts in `scripts/vm/` run inside the VM. Start them from the host with `just vm-run <script>`: `tf-apply`, `ci-up`, `ci-down`, `exporter`. Recipes that start with `vm-` run on the host.
+Scripts in `scripts/vm/` run inside the VM. Start them from the host with `just vm-run <script>`: `tf-apply`, `ci-up`, `ci-down`, `ci-pipeline`, `exporter`. Recipes that start with `vm-` run on the host. `just vm-run ci-pipeline true` makes the `base` job fail. `just vm-run ci-pipeline` resets it.

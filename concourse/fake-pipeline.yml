@@ -1,0 +1,56 @@
+# Mock image-build chain for docs/plan.md stage 4.
+resources:
+  - name: time
+    type: time
+    source:
+      interval: 5m
+
+jobs:
+  - name: base
+    plan:
+      - get: time
+        trigger: true
+      - task: build
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source: { repository: busybox }
+          params:
+            FAIL: ((base_fail))
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                sleep 30
+                if [ "$FAIL" = true ]; then
+                  echo "base_fail is true: fail"
+                  exit 1
+                fi
+
+  - name: sideload
+    plan:
+      - get: time
+        passed: [base]
+        trigger: true
+      - task: build
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source: { repository: busybox }
+          run: { path: sleep, args: ["20"] }
+
+  - name: sidedish
+    plan:
+      - get: time
+        passed: [sideload]
+        trigger: true
+      - task: build
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source: { repository: busybox }
+          run: { path: sleep, args: ["20"] }

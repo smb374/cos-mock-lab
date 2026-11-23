@@ -13,3 +13,8 @@ Record each failed step and its fix. Record each charm config name that differs 
 | 3 | 4 | `grafana`, `loki` and `prometheus` stayed blocked with `401 Unauthorized` on the StatefulSet patch. Pods stayed `Terminating` and `PodInitializing` for about 10 minutes | Ran `sudo microk8s stop` and `start`. The pods came back. I did not prove why the first calls got 401. |
 | 3 | 4 | Image pulls took 5 minutes or more. The VPN to `REDACTED-HOST` routes all host traffic and the speed fell to 1 MiB/s or less | None. Wait for the pulls. |
 | 3 | 5, 6 | None | All 8 apps `active`. Grafana is at `http://10.69.190.128/cos-lite-grafana`. The host check showed the Prometheus, Loki and Alertmanager data sources. |
+| 4 | 1 | `docker` is missing in the VM, so `just vm-run ci-up` could not run | Ran `just vm-run install-tools` first. |
+| 4 | 2 | The Concourse quickstart does not publish the metrics port | Added `9391:9391` to `ports` in `concourse/docker-compose.yml`. |
+| 4 | 5 | The plan makes `base` fail when the minute is a multiple of 7. That depends on the clock, and it is fragile | `base` reads the pipeline variable `base_fail`. `just vm-run ci-pipeline true` makes it fail. |
+| 4 | 5 | `BUILD_NAME` is empty inside a task, so my first try (fail on every 3rd build) always failed | Dropped it. Concourse sets that variable in resource containers, not in tasks. |
+| 4 | check | None | `concourse_builds_finished` shows `failed` and `succeeded` for `base`, and `succeeded` for `sideload` and `sidedish`. |

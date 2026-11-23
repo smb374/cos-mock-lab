@@ -3,4 +3,4 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-docker compose -f concourse/docker-compose.yml up -d
+docker compose -f concourse/docker-compose.yml up -d --quiet-pull
