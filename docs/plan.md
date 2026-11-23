@@ -4,7 +4,7 @@ Date: 2026-11-23
 
 ## Goal
 
-Build a disposable lab that runs COS Lite for a mock CI service. Use it to test dashboards, alert rules, and the link to a central COS before work on the real `REDACTED-HOST`.
+Build a disposable lab that runs COS Lite for a mock CI service. Use it to test dashboards, alert rules, and the link to a central COS before work on the real CI instance.
 
 Done means all of these are true:
 - COS Lite runs on Juju 3.6 in a Multipass VM, and Grafana shows Concourse metrics.
