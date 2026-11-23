@@ -4,3 +4,4 @@
 *.tfvars
 __pycache__/
 .venv/
+.direnv/
