@@ -9,8 +9,8 @@ disk := "60G"
 default:
     @just --list
 
-# Launch the lab VM (plan stage 1).
-vm-up:
+# Create the lab VM and mount the repo (plan stage 1).
+vm-launch:
     multipass launch 24.04 --name {{vm}} --cpus {{cpus}} --memory {{memory}} --disk {{disk}}
     multipass mount . {{vm}}:{{vm_repo}}
 
@@ -26,8 +26,15 @@ vm-snapshot name:
     multipass snapshot {{vm}} --name {{name}}
     multipass start {{vm}}
 
-vm-down:
+# Delete the VM and all its snapshots. This cannot be undone.
+vm-purge:
     multipass delete --purge {{vm}}
+
+vm-up:
+    multipass start {{vm}}
+
+vm-down:
+    multipass stop {{vm}}
 
 # Run scripts/vm/<script>.sh in the VM, e.g. just vm-run tf-apply (plan stages 3-5).
 vm-run script *args:

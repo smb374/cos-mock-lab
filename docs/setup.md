@@ -8,13 +8,13 @@ Requirements: Ubuntu with snapd, 6 CPU, 12 GB RAM, and 60 GB free disk.
 
 ```bash
 sudo snap install multipass
-just vm-up
+just vm-launch
 just vm-shell
 ```
 
 ## Inside the VM
 
-`just vm-up` mounts this repo in the VM at `~/cos-mock-lab`. Run `just vm-run install-tools` on the host to install `uv`, Terraform, and Docker in the VM. Install the rest for each stage of [plan.md](plan.md):
+`just vm-launch` mounts this repo in the VM at `~/cos-mock-lab`. Run `just vm-run install-tools` on the host to install `uv`, Terraform, and Docker in the VM. Install the rest for each stage of [plan.md](plan.md):
 
 | Stage | Software | Install |
 | --- | --- | --- |
