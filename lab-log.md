@@ -51,3 +51,5 @@ Record each failed step and its fix. Record each charm config name that differs 
 | 8 | 4 | check | `ci-up` and `ci-pipeline` worked on 4.0 with no change. `concourse_builds_finished` is on port 9391. |
 | 8 | 5 | `scrape.sh` and `central.sh` were not executable (`Permission denied`) | `chmod +x`, committed. |
 | 8 | 5 | `scrape.sh` failed once with a DNS timeout to `api.charmhub.io`. Same as the stage 6 rebuild | Ran it again. It deployed both apps on 4.0. The charm prints a new warning: `declares no containers but "cos-lite" is a Kubernetes model`. The apps still deploy. |
+| 8 | 5 | check | Both scrape targets show `up` 1 on 4.0. `concourse_builds_finished_total` and `lab_swift_artifact_age_seconds` return data. |
+| 8 | 6 | The Git sync app `cos-config` and the Alertmanager webhook config were set by hand and were not in the repo | Added `scripts/vm/gitsync.sh <git_repo_url> [branch]`. On 4.0 it deployed `cos-config` (`cos-configuration-k8s` 3.0/stable, rev 116), made both integrations and set `config_file` on Alertmanager. The image pull was still running at the time of this row. |
