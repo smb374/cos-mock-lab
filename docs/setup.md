@@ -4,6 +4,8 @@ Install this software with snap or apt, not with nix. The lab needs it on the ho
 
 ## Host
 
+For the full build, step by step, see [reproduce.md](reproduce.md).
+
 Requirements: Ubuntu with snapd, 6 CPU, 12 GB RAM, and 60 GB free disk.
 
 ```bash
