@@ -91,7 +91,7 @@ Run the other steps the same way: `just --justfile ../cos-mock-lab-40/justfile v
 
 ## Juju 3.6 and 4.0
 
-The same scripts and the same Terraform module (`tf-cos-lite-3.1.3`, provider `juju/juju` 2.4.1) work on both versions. The list of 4.0 changes that touch this lab is in [lab-log.md](../lab-log.md), stage 8.
+The same scripts and the same Terraform module (`tf-cos-lite-3.1.3`) work on both versions. Both runs used the provider `juju/juju` 2.4.1. `terraform/main.tf` allows `~> 2.4`, which is any 2.x from 2.4. A newer provider was not tested. The lock file is not in git, so a new `terraform init` takes the newest allowed version. The list of 4.0 changes that touch this lab is in [lab-log.md](../lab-log.md), stage 8.
 
 | Item | 3.6 | 4.0 |
 | --- | --- | --- |
