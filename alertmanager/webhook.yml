@@ -6,5 +6,5 @@ route:
 receivers:
   - name: lab-webhook
     webhook_configs:
-      - url: http://10.69.190.97:9000/
+      - url: http://VM_ADDR:9000/
         send_resolved: true

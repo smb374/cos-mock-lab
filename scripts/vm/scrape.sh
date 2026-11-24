@@ -3,12 +3,12 @@
 # Deploys the two scrape-target apps (plan stage 5) with Juju topology labels (stage 7).
 # Run once on a fresh model. It does not check for existing apps.
 set -euo pipefail
-
-addr=$(ip -4 -o addr show eth0 | awk '{print $4}' | cut -d/ -f1)
+cd "$(dirname "$0")/../.."
+source scripts/vm/lib.sh
 
 scrape() { # name job port application
   juju deploy prometheus-scrape-target-k8s "scrape-$1" --channel 3.0/stable --trust -m cos-lite \
-    --config job_name="$2" --config targets="$addr:$3" \
+    --config job_name="$2" --config targets="$VM_ADDR:$3" \
     --config labels="juju_model:cos-lite,juju_application:$4"
   juju integrate -m cos-lite "scrape-$1:metrics-endpoint" prometheus:metrics-endpoint
 }
