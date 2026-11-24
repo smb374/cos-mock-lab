@@ -45,4 +45,9 @@ Record each failed step and its fix. Record each charm config name that differs 
 | 8 | 2 | Stage 2 had no script in the repo | Added `scripts/vm/bootstrap.sh [juju_channel]`. Run with `4.0/stable`: MicroK8s `1.36-strict/stable`, MetalLB and `juju bootstrap microk8s lab` all worked. Controller `lab` is Juju 4.0.16. Snapshot `s2-juju40-bootstrapped`. About 4 min. |
 | 8 | 2 | `juju add-model` failed twice with `connection refused` to the Kubernetes API (port 16443, then kubelet 10250) after the snapshot restart | MicroK8s needed a few minutes to come up. Retried in a loop until `juju controllers --refresh` worked. |
 | 8 | 3 | `juju add-model` prints a new notice: add SSH keys with `juju add-ssh-key` for `juju ssh` | Not needed. This lab uses no `juju ssh`. |
-| 8 | 3 | `terraform apply` of the same module (`tf-cos-lite-3.1.3`) against the 4.0.16 controller, with `juju/juju` v2.4.1 | Works with no change: 50 resources added. Charms are pulling images. Status not final yet. |
+| 8 | 3 | `terraform apply` of the same module (`tf-cos-lite-3.1.3`) against the 4.0.16 controller, with `juju/juju` v2.4.1 | Works with no change: 50 resources added. About 20 min later all 8 apps were `active`. |
+| 8 | 3 | check | Grafana at `http://10.69.190.212/cos-lite-grafana` lists the Alertmanager, Loki and Prometheus data sources. |
+| 8 | 4 | `fly` install and login were manual and not in the repo | `scripts/vm/ci-up.sh` now waits for the web page, installs `fly` from it and logs in. |
+| 8 | 4 | check | `ci-up` and `ci-pipeline` worked on 4.0 with no change. `concourse_builds_finished` is on port 9391. |
+| 8 | 5 | `scrape.sh` and `central.sh` were not executable (`Permission denied`) | `chmod +x`, committed. |
+| 8 | 5 | `scrape.sh` failed once with a DNS timeout to `api.charmhub.io`. Same as the stage 6 rebuild | Ran it again. It deployed both apps on 4.0. The charm prints a new warning: `declares no containers but "cos-lite" is a Kubernetes model`. The apps still deploy. |
