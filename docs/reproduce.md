@@ -18,9 +18,9 @@ All commands run on the host, in the repo root, unless the text says otherwise. 
 | 1 | `just vm-launch` | Creates the VM `cos-mock` and mounts the repo at `~/cos-mock-lab`. | `just vm-exec 'nproc; free -g'` shows 6 and about 12. |
 | 2 | `just vm-run install-tools` | Installs `uv`, Terraform and Docker. | `just vm-exec 'terraform version; docker --version'` |
 | 3 | `just vm-run bootstrap <channel>` | Installs MicroK8s `1.36-strict/stable`, the add-ons and MetalLB on the VM address. Installs Juju and bootstraps the controller `lab`. The channel is `3.6/stable` (default) or `4.0/stable`. | `just vm-exec 'juju controllers'` shows `lab` and the version. |
-| 4 | `just vm-exec 'juju add-model cos-lite'` | Creates the model. | `just vm-exec 'juju models'` |
+| 4 | Nothing to run | `tf-apply` in step 5 creates the model `cos-lite` when it is missing. | `just vm-exec 'juju models'` after step 5. |
 | 5 | `just vm-run tf-apply` | Deploys COS Lite with the Terraform module. 50 resources. | After 10 to 25 min: `just vm-exec 'juju status -m cos-lite'` shows 8 apps `active`. |
-| 6 | Edit two files (see "VM address") | Puts the VM address in the repo files. | `just vm-ip` and the two files show the same address. |
+| 6 | Nothing to run | The scripts read the VM address at run time. No file holds an address. | None. |
 | 7 | `just vm-run ci-up` | Starts Concourse, installs `fly` from its web page and logs in. | `just vm-exec 'curl -s localhost:9391/metrics \| grep -c concourse_builds_finished'` prints a number above 0. |
 | 8 | `just vm-run ci-pipeline` | Sets and unpauses the pipeline `fake-image-build`. | `just vm-exec 'fly -t lab builds'` lists builds. |
 | 9 | `just vm-run exporter` | Installs and starts the exporter as `lab-exporter` (port 9400). | `just vm-exec 'curl -s localhost:9400/metrics \| grep -c ^lab_'` prints 6. |
@@ -28,16 +28,13 @@ All commands run on the host, in the repo root, unless the text says otherwise. 
 | 11 | `just vm-run gitsync <repo_url> main` | Deploys `cos-config`. It loads `dashboards/` and `alerts/` from git. It also sets the Alertmanager webhook. | `cos-config` is `active`. Prometheus lists 5 rules. Grafana lists the dashboard `CI health`. |
 | 12 | `just vm-run central` (optional) | Stage 7. Model `central` with a Prometheus. The collector in `cos-lite` sends the scraped metrics there. | The central Prometheus returns `concourse_builds_finished_total` with `juju_model` and `juju_application` labels. |
 
-Steps 4 and 5 use the model name `cos-lite`. `tf-apply` takes another name as its first argument, but the other scripts expect `cos-lite`.
+`tf-apply` takes another model name as its first argument, but the other scripts expect `cos-lite`.
 
-### VM address
+### VM address and Terraform state
 
-Two files hold the VM address, and `just vm-ip` shows it. Change both before step 7:
+`scripts/vm/lib.sh` reads the VM address from `eth0`. `ci-up`, `ci-down`, `scrape` and `gitsync` use it. `docker-compose.yml` takes it from `VM_ADDR`, and `gitsync` writes it into the Alertmanager webhook URL. Multipass keeps the same address across `stop` and `start`. A purge gives a new address, and the scripts follow it.
 
-- `concourse/docker-compose.yml`: `CONCOURSE_EXTERNAL_URL: http://<address>:8080`
-- `alertmanager/webhook.yml`: `url: http://<address>:9000/`
-
-The scripts `scrape.sh` and `ci-up.sh` read the address from `eth0`. Multipass keeps the same address across `stop` and `start`. A purge gives a new address.
+Terraform keeps its state in `~/<model>.tfstate` and its plugins in `~/.terraform-data`, both in the VM. A purge removes them. The repo mount holds no state.
 
 ### URLs and passwords
 
@@ -53,7 +50,7 @@ Run a fault, wait for the alert, then undo the fault. Check the alerts in Alertm
 | --- | --- | --- |
 | `ConcourseJobFailing` | `just vm-run ci-pipeline true` (the `base` job fails) | `just vm-run ci-pipeline` |
 | `NoSuccessfulBuild` | `just vm-exec 'fly -t lab pause-pipeline -p fake-image-build'` and wait 2 h | `just vm-exec 'fly -t lab unpause-pipeline -p fake-image-build'` |
-| `WorkerMissing` | `just vm-exec 'docker compose -f ~/cos-mock-lab/concourse/docker-compose.yml stop concourse'` | Same command with `start`. Also fires `ScrapeTargetDown` for the Concourse target. |
+| `WorkerMissing` | `just vm-exec 'docker stop concourse-concourse-1'` | `just vm-exec 'docker start concourse-concourse-1'`. The stop also fires `ScrapeTargetDown` for the Concourse target. |
 | `ArtifactStale` | `just vm-run exporter 108000` (age frozen at 30 h) | `just vm-run exporter` |
 | `ScrapeTargetDown` | Stop Concourse as in the `WorkerMissing` row (tested). Stopping `lab-exporter` with `just vm-exec 'sudo systemctl stop lab-exporter'` should work too, but was not tested. | Start it again. |
 
@@ -63,21 +60,21 @@ Receiver test: start the sink with `just vm-exec 'sudo systemd-run --uid=ubuntu 
 
 ## Snapshots
 
-`just vm-snapshot <name>` stops the VM, takes the snapshot and starts the VM. After each snapshot the lab recreated the Concourse container with `just vm-exec 'docker compose -f ~/cos-mock-lab/concourse/docker-compose.yml up -d --force-recreate concourse'`. Nobody tested whether this is needed. MicroK8s needs a few minutes before `juju` commands work again.
+`just vm-snapshot <name>` stops the VM, takes the snapshot and starts the VM. After each snapshot the lab recreated the Concourse container with `just vm-run ci-up --force-recreate concourse`. Nobody tested whether this is needed. MicroK8s needs a few minutes before `juju` commands work again.
 
 `just vm-purge` deletes the VM and all its snapshots.
 
 ## A second VM for another Juju version
 
-The repo mount carries `terraform/terraform.tfstate` and the VM address. Two VMs cannot share one mount. Use a git worktree for the second VM:
+The VM keeps its own address and its own Terraform state, so two VMs can share the repo and its mount. Run the same steps with the `vm` variable set to the name of the second VM:
 
 ```bash
-git worktree add ../cos-mock-lab-40 -b juju-4.0
-cp concourse/.env ../cos-mock-lab-40/concourse/.env
-just --justfile ../cos-mock-lab-40/justfile vm=cos-mock-40 vm-launch
+just vm=cos-mock-40 vm-launch
+just vm=cos-mock-40 vm-run install-tools
+just vm=cos-mock-40 vm-run bootstrap 4.0/stable
 ```
 
-Run the other steps the same way: `just --justfile ../cos-mock-lab-40/justfile vm=cos-mock-40 vm-run <script>`. In the worktree, change the VM address in the two files (step 6) and commit that change on the worktree branch only. Stop the first VM before you launch the second one, because the host cannot hold two 12 GB VMs plus its own load.
+Then continue with step 5 and the later steps, each with `vm=cos-mock-40`. Stop the first VM before you launch the second one, because the host cannot hold two 12 GB VMs plus its own load. The lab ran stage 8 this way before the scripts read the address at run time. It used a git worktree and edited the address in two files.
 
 ## Known problems
 
@@ -85,9 +82,10 @@ Run the other steps the same way: `just --justfile ../cos-mock-lab-40/justfile v
 - Image pulls are slow behind a VPN (1 MiB/s or less). Step 5 took about 20 min on Juju 4.0. The other steps that deploy charms (10 and 11) also wait for pulls.
 - A deploy can fail once with a DNS timeout to `api.charmhub.io`. Run the same script again. If a script stops after the failed `deploy`, nothing was created.
 - After a long outage, `grafana`, `loki` and `prometheus` can stay `blocked` with `401 Unauthorized`. `sudo microk8s stop` and `sudo microk8s start` fixed it once.
-- `terraform apply` fails with `unknown model` when an old `terraform/terraform.tfstate` is in the repo. Move the file away and run it again.
+- A repo from before the move of the Terraform state can hold an old `terraform/terraform.tfstate`. It is ignored by git and no longer read. Delete it.
 - The scripts in steps 10, 11 and 12 do not check for existing apps. Run each one once on a fresh model.
 - Do not start a background process in `just vm-exec`. The call waits for the process and never returns. Use `systemd-run`.
+- Not run end to end: the scripts after the change to the run-time address and the VM-local Terraform state (`lib.sh`, `ci-up`, `ci-down`, `scrape`, `gitsync`, `tf-apply`). Only `bash -n` passed. A test of `ci-up` on the Juju 4.0 VM got stuck at the wait for the Concourse web page, and I did not find the cause.
 
 ## Juju 3.6 and 4.0
 
